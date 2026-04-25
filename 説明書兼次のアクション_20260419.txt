@@ -1,0 +1,5 @@
+extract_athome_data_from_html.py
+extract_athome_data.py
+
+どちらのスクリプトを使うかまだ確認していない。
+別々の日にAIに作らせたから次のアクションとして二つのコードを理解しなければならない。
