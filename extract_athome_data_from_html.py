@@ -2,9 +2,9 @@ import os
 import csv
 from bs4 import BeautifulSoup
 
-# 1. 処理したいファイルが入っているフォルダを指定
+# 1. 処理したいファイルが入っているフォルダを指定.
 # （ここでは現在のフォルダを対象にしています）
-target_dir = './'
+target_dir = './bukken_pool'
 output_file = 'bukken_list.csv'
 
 def extract_property_info(file_path):
@@ -55,7 +55,7 @@ def main():
                 data = extract_property_info(file_path)
                 all_properties.extend(data)
             except Exception as e:
-                print(f"エラー（{filename}）: {e}")
+                print(f"エラー（{filename}): {e}")
 
     # 4. 結果をCSVに保存
     if all_properties:
@@ -64,7 +64,7 @@ def main():
             dict_writer = csv.DictWriter(f, fieldnames=keys)
             dict_writer.writeheader()
             dict_writer.writerows(all_properties)
-        print(f"\n完了！ {len(all_properties)} 件の物件情報を {output_file} に保存しました。")
+        print(f"\n完了! {len(all_properties)} 件の物件情報を {output_file} に保存しました。")
     else:
         print("\n物件情報が見つかりませんでした。タグの設定を確認してください。")
 
