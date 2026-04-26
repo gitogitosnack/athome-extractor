@@ -16,22 +16,32 @@ def extract_property_info(file_path):
     
     soup = BeautifulSoup(html_content, 'html.parser')
     
-    # 2. 物件情報のブロックを特定（サイトの構造に合わせて調整が必要）
-    # アットホームの例：物件ごとに <div class="item"> などのブロックがある場合
-    items = soup.find_all('div', class_='item') # ←ここは実際のHTML構造に合わせます
+    # 物件のブロックを特定（実際のHTML構造に合わせて調整）
+    # アットホームの物件は <div class="card-box open"> 内にあります
+    items = soup.find_all('div', class_='card-box open')
     
     for item in items:
         # 物件名の抽出
-        name_tag = item.find('h2') # 物件名がh2タグにあると想定
+        name_tag = item.find('div', class_='title-wrap__title-text')
         name = name_tag.get_text(strip=True) if name_tag else 'N/A'
         
         # 価格の抽出
-        price_tag = item.find('p', class_='price') # 価格が特定のクラスにあると想定
-        price = price_tag.get_text(strip=True) if price_tag else 'N/A'
+        price_tag = item.find('div', class_='property-price')
+        if price_tag:
+            price_text = price_tag.get_text(strip=True)
+            # 数字部分のみ抽出（例: "148万円" → "148万円"）
+            price = price_text
+        else:
+            price = 'N/A'
         
         # 所在地の抽出
-        address_tag = item.find('p', class_='address')
-        address = address_tag.get_text(strip=True) if address_tag else 'N/A'
+        address_tag = item.find('span', string=lambda text: text and '所在地' in text)
+        if address_tag:
+            address = address_tag.find_next('span').get_text(strip=True) if address_tag.find_next('span') else 'N/A'
+        else:
+            # 別の方法で所在地を探す
+            address_span = item.find('span', text=lambda t: t and ('北九州市' in t or '福岡市' in t))
+            address = address_span.get_text(strip=True) if address_span else 'N/A'
         
         properties.append({
             '物件名': name,
