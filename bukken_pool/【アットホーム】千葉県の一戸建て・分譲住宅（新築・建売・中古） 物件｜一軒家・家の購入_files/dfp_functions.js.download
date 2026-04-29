@@ -1,0 +1,199 @@
+var athomeApp = athomeApp || {};
+athomeApp.dfp_functions =
+  athomeApp.dfp_functions ||
+  (function () {
+    return {
+      readyForDfp: h,
+      republishDfp: i
+    };
+    function h(l) {
+      var k = c();
+      d(k);
+      if (l) {
+        e();
+      }
+      b(k, l);
+    }
+    function e() {
+      googletag = {};
+      googletag.cmd = [];
+      (function () {
+        var k = document.createElement('script');
+        k.async = true;
+        k.type = 'text/javascript';
+        var m = 'https:' == document.location.protocol;
+        k.src = (m ? 'https:' : 'http:') + '//www.googletagservices.com/tag/js/gpt.js';
+        var l = document.getElementsByTagName('script')[0];
+        l.parentNode.insertBefore(k, l);
+      })();
+    }
+    function c() {
+      var l = $('#dfp_form');
+      var k = {};
+      k.unitName = l.attr('data-unitName');
+      k.typeKey = l.attr('data-typeKey');
+      k.dfpTypeName = l.attr('data-dfpTypeName');
+      k.infeedTypeName = l.attr('data-infeedTypeName');
+      k.slotNames = l.attr('data-slotName');
+      k.syumokuCD = l.attr('data-syumokuCD');
+      k.areaCD = l.attr('data-areaCD');
+      k.DFPAreaCD = l.attr('data-DFPAreaCD');
+      k.kenCD = l.attr('data-prefCD');
+      k.appNames = l.attr('data-appname')?.split(',');
+      k.slotSizes = l.attr('data-slotsize');
+      k.buyInfeedAreaCD = l.attr('data-buy_infeed_area_cd');
+      k.jigyoInfeedAreaCD = l.attr('data-jigyo_infeed_area_cd');
+      k.slotNames = k.slotNames.split(',');
+      if (k.slotSizes) {
+        k.slotSizes = k.slotSizes.split(',');
+      }
+      return k;
+    }
+    function d(k) {
+      var m = k.areaCD;
+      if (m !== '') {
+        k.areaCD = ['00', m];
+      } else {
+        k.areaCD = ['00', '11', '12', '13', '14', '15', '16', '17'];
+      }
+      var l = k.DFPAreaCD;
+      if (l !== '') {
+        if (l.indexOf(',') === -1) {
+          k.DFPAreaCD = ['000', '110', '111', '120', '130', '140', '150', '160', '161', '170'];
+        } else {
+          k.DFPAreaCD = l.split(',');
+        }
+      } else {
+        k.DFPAreaCD = ['000', '110', '111', '120', '130', '140', '150', '160', '161', '170'];
+      }
+    }
+    function b(dfpFormData, k) {
+      googletag.cmd.push(function () {
+        if (k) {
+          const isGptAd = dfpFormData.appNames.join().includes('infeed');
+
+          for (var i = 0; i < dfpFormData.slotNames.length; i++) {
+            var isTopOrFooter = dfpFormData.slotNames[i].includes('top') || dfpFormData.slotNames[i].includes('footer');
+            var adPath = '';
+            if (isGptAd && isTopOrFooter) {
+              adPath = dfpFormData.typeKey;
+            } else if (isGptAd && !isTopOrFooter) {
+              adPath = dfpFormData.infeedTypeName;
+            } else {
+              adPath = dfpFormData.dfpTypeName;
+            }
+            var slotName = dfpFormData.slotNames[i];
+            var unitUrlPath =
+              dfpFormData.appNames &&
+              dfpFormData.appNames.length &&
+              dfpFormData.appNames.length == dfpFormData.slotNames.length &&
+              dfpFormData.appNames[i]
+                ? dfpFormData.unitName + dfpFormData.appNames[i] + '/' + slotName
+                : dfpFormData.unitName + adPath + '/' + slotName;
+            var isPc = dfpFormData.unitName.indexOf('-smp') < 0;
+            var o = g(slotName, isPc);
+            var dfpAdId =
+              $('[gptad^=' + slotName + ']').length || dfpFormData?.buyInfeedAreaCD || (dfpFormData?.jigyoInfeedAreaCD && dfpFormData.slotSizes[i])
+                ? 'div-gpt-ad-' + slotName
+                : 'DFP_' + slotName;
+            if (dfpFormData.slotSizes && dfpFormData.slotSizes.length && dfpFormData.slotSizes.length == dfpFormData.slotNames.length) {
+              o = dfpFormData.slotSizes[i] ? dfpFormData.slotSizes[i] : o;
+            }
+            if (unitUrlPath && o && dfpAdId) {
+              googletag.defineSlot(unitUrlPath, o, dfpAdId).addService(googletag.pubads());
+            }
+          }
+        }
+
+        googletag.pubads().setTargeting('syumoku_cd', dfpFormData.syumokuCD);
+        googletag.pubads().setTargeting(
+          'area_cd',
+          dfpFormData.areaCD.filter(element => element !== undefined)
+        );
+        googletag.pubads().setTargeting('DFP_area_cd', dfpFormData.DFPAreaCD);
+
+        const buyInfeedAreaCd = dfpFormData?.buyInfeedAreaCD?.split(',');
+        const jigyoInfeedAreaCd = dfpFormData?.jigyoInfeedAreaCD?.split(',');
+        if (!jigyoInfeedAreaCd){
+          googletag.pubads().setTargeting(
+            'buy_infeed_area_cd',
+            buyInfeedAreaCd.filter((element, index) => buyInfeedAreaCd.indexOf(element) === index)
+          );
+        } else {
+          googletag.pubads().setTargeting(
+            'jigyo_infeed_area_cd',
+            jigyoInfeedAreaCd.filter((element, index) => jigyoInfeedAreaCd.indexOf(element) === index)
+          );
+        }
+
+        googletag.pubads().setTargeting('ken_cd', dfpFormData.kenCD);
+
+        googletag.pubads().enableSingleRequest();
+        googletag.pubads().collapseEmptyDivs();
+        googletag.enableServices();
+
+        googletag.pubads().addEventListener('slotRenderEnded', function (r) {
+          j();
+        });
+      });
+    }
+    function g(k, isPc) {
+      var l = 'fluid';
+      switch (true) {
+        case k.indexOf('slide') === 0 && isPc:
+          return l = [540, 250];
+        case k.indexOf('right_smallsky') === 0:
+          return l = [120, 330];
+        case k.indexOf('right') === 0:
+          return l = [220, 170];
+        case k.indexOf('small') === 0:
+          return l = [120, 105];
+        case k.indexOf('sky') === 0:
+          return l = [120, 615];
+        case k.indexOf('foot_860x130') === 0:
+          return l = [860, 130];
+        case k.indexOf('footer') === 0:
+          return l = [650, 90];
+        case k.indexOf('foot') === 0:
+          return l = [650, 130];
+        case k.indexOf('feature_right') === 0:
+          return l = [195, 122];
+        case k.indexOf('left_small') === 0:
+          return l = [196, 120];
+        default:
+          return l;
+      }
+    }
+    function j() {
+      var l = $('#dfp_parts').height();
+      var k = $('#dfp_parts_foot').height();
+      if (l !== null) {
+        $('#disp', parent.document).css({
+          height: l
+        });
+      }
+      if (k !== null) {
+        $('#disp_foot', parent.document).css({
+          height: k
+        });
+      }
+    }
+    function i(k) {
+      f(k);
+      h();
+      a();
+    }
+    function f(m) {
+      var o = m.params.area_params.code;
+      var l = m.params.dfp_area_cd;
+      var n = m.params.prefecture_params.code;
+      var k = $('#dfp_form');
+      k.attr('data-areaCD', o);
+      k.attr('data-DFPAreaCD', l);
+      k.attr('data-prefCD', n);
+    }
+    function a() {
+      googletag.pubads().refresh();
+    }
+  })();
+athomeApp.dfp_functions.readyForDfp(true);

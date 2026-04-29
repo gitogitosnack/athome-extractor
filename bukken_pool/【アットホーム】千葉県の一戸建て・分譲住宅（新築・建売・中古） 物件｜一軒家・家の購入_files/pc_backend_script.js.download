@@ -1,0 +1,189 @@
+$(document).ready(function () {
+  /*-----------------------------------
+	こだわり部屋ファイル
+	-----------------------------------*/
+  /**
+   * こだわり部屋ファイルJSが読み込まれてから表示
+   * （表示 → JS取り込み間のボタンアクションを防ぐため）
+   */
+  const element = $('.roomfile')[0];
+  if (element?.style) element.style.visibility = 'visible';
+
+  var moveFlg = false;
+  ////////Middle////////
+  var $middle_btn1 = $('#middle .btn-1-a');
+  var $middle_btn2 = $('#middle .btn-2-a');
+  var $middle_listarea = $('#middle .list_cover ul');
+  var middle_liheight = $('#middle .list_cover li').height() + 5;
+  var middle_ulheight = $('#middle .list_cover ul').height();
+  var middleSpeed = 500;
+  if ($('#middle .list_cover .clone').length < 1) {
+    var tmp = $middle_listarea.clone().addClass('clone');
+    $middle_listarea.before(tmp);
+  }
+  $middle_btn1.click(function () {
+    if (moveFlg) {
+      return false;
+    }
+    moveFlg = true;
+    var top = $middle_listarea.css('top').replace('px', '') * 1.0;
+    if (top < 0) {
+      var cloneposition = middle_ulheight + top;
+    } else {
+      var cloneposition = -1 * middle_ulheight + top;
+    }
+    $('.clone').css({ top: cloneposition });
+    var clonemove = cloneposition + middle_liheight;
+    $('.clone').animate({ top: clonemove }, middleSpeed);
+    $middle_listarea.animate({ top: middle_liheight + top }, middleSpeed, function () {
+      moveFlg = false;
+      if (clonemove == 0) {
+        $middle_listarea.css({ top: clonemove });
+      }
+    });
+    return false;
+  });
+  $middle_btn2.click(function () {
+    if (moveFlg) {
+      return false;
+    }
+    moveFlg = true;
+    var top = $middle_listarea.css('top').replace('px', '') * 1.0;
+    if (top > 0) {
+      var cloneposition = -1 * middle_ulheight + top;
+    } else {
+      var cloneposition = middle_ulheight + top;
+    }
+    $('.clone').css({ top: cloneposition });
+    var clonemove = cloneposition - middle_liheight;
+    $('.clone').animate({ top: clonemove }, middleSpeed);
+    $middle_listarea.animate({ top: -1 * middle_liheight + top }, middleSpeed, function () {
+      moveFlg = false;
+      if (clonemove == 0) {
+        $middle_listarea.css({ top: clonemove });
+      }
+    });
+    return false;
+  });
+  ////////Middle////////
+  ////////Small////////
+  var $small_btn1 = $('#small .btn-1-a');
+  var $small_btn2 = $('#small .btn-2-a');
+  var $small_listarea = $('#small .list_cover ul');
+  var small_liheight = $('#small .list_cover li').height() + 5;
+  var small_ulheight = $('#small .list_cover ul').height();
+  var smallSpeed = 500;
+  if ($('#small .list_cover .clone').length < 1) {
+    var tmp = $small_listarea.clone().addClass('clone');
+    $small_listarea.before(tmp);
+  }
+  $small_btn1.click(function () {
+    if (moveFlg) {
+      return false;
+    }
+    moveFlg = true;
+    var top = $small_listarea.css('top').replace('px', '') * 1.0;
+    if (top <= (-1 * small_ulheight) / 2 && top < 0) {
+      var cloneposition = small_ulheight + top;
+    } else {
+      var cloneposition = -1 * small_ulheight + top;
+    }
+    $('.clone').css({ top: cloneposition });
+    var clonemove = cloneposition + small_liheight;
+    $('.clone').animate({ top: clonemove }, smallSpeed);
+    $small_listarea.animate({ top: small_liheight + top }, smallSpeed, function () {
+      moveFlg = false;
+      if (clonemove == 0) {
+        $small_listarea.css({ top: clonemove });
+      }
+      if (clonemove >= small_ulheight) {
+        $small_listarea.css({ top: 0 });
+      }
+    });
+    return false;
+  });
+  $small_btn2.click(function () {
+    if (moveFlg) {
+      return false;
+    }
+    moveFlg = true;
+    var top = $small_listarea.css('top').replace('px', '') * 1.0;
+    if (top <= small_ulheight / 2 && top > 0) {
+      var cloneposition = -1 * small_ulheight + top;
+    } else {
+      if (top - small_ulheight <= -small_ulheight) {
+        var cloneposition = small_ulheight + top;
+      } else {
+        var cloneposition = top - small_ulheight;
+      }
+    }
+    $('.clone').css({ top: cloneposition });
+    var clonemove = cloneposition - small_liheight;
+    $('.clone').animate({ top: clonemove }, smallSpeed);
+    $small_listarea.animate({ top: -1 * small_liheight + top }, smallSpeed, function () {
+      moveFlg = false;
+      if (clonemove == 0) {
+        $small_listarea.css({ top: clonemove });
+      }
+      if (clonemove <= -1 * small_ulheight) {
+        $small_listarea.css({ top: 0 });
+      }
+    });
+    return false;
+  });
+  ////////Small////////
+  /*-----------------------------------
+	特集アコーディオン
+	-----------------------------------*/
+  let featureListMinHeight;
+  let featureListMaxHeight;
+  let featureAccordionList = [];
+  // 特集が少ない場合、「もっと見る」を非表示（6以下）
+  // 数字を書き変えてアコーディオンの数を調整(6 = 表示させる特集の数)
+  $('.accordion .feature-list').each(function () {
+    const listItem = $(this).children('li');
+    if (listItem.length <= 6) {
+      // 6以下の場合
+      // 「もっと見る」を非表示
+      $(this).parent().removeClass('accordion');
+    } else {
+      // 6以上の場合
+      // アコーディオンの高さを取得
+      featureListMinHeight = listItem.eq(6).position().top + 60;
+      featureListMaxHeight = $(this).parent().innerHeight() + 40;
+      // 配列を作成
+      featureAccordionList.push({ minHeight: featureListMinHeight, maxHeight: featureListMaxHeight });
+      // アコーディオンの高さを設定
+      $(this)
+        .parent()
+        .css('height', featureListMinHeight + 'px');
+    }
+  });
+  // 「もっと見る」をクリックでアコーディオン開閉
+  $('.accordion .more-btn').click(function () {
+    const index = $('.accordion .more-btn').index($(this));
+    if ($(this).parent().hasClass('open')) {
+      //コンテンツの高さを設定
+      $(this)
+        .parent()
+        .css('height', featureAccordionList[index].minHeight + 'px');
+      //openクラスを削除
+      $(this).parent().removeClass('open');
+      //テキストを設定
+      $(this).text('もっと見る');
+    } else {
+      //コンテンツの高さを設定
+      $(this)
+        .parent()
+        .css('height', featureAccordionList[index].maxHeight + 'px');
+      //openクラスを追加
+      $(this).parent().addClass('open');
+      //テキストを設定
+      $(this).text('閉じる');
+    }
+  });
+
+  $('.feature__link-more').click(function () {
+    $(this).addClass('feature__link-more--active');
+  });
+});
